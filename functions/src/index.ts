@@ -4,8 +4,7 @@ import * as config from './config.js'
 
 import { onRequest } from "firebase-functions/v2/https";
 import Stripe from 'stripe';
-import { beforeUserCreated } from "firebase-functions/v2/identity";
- 
+
 const admin = require('firebase-admin');
 
 admin.initializeApp();
@@ -52,44 +51,36 @@ export const handleSubscriptionEvents = onRequest(
    }
 );
 
-// Does not work on emulator. https://stackoverflow.com/a/77798455
-// Only way to test this is to run on the real authentication system. 
-export const beforecreated = beforeUserCreated((event) => {
-   const user = event.data;
-   const currentDate = new Date()
-   const futureDate = new Date(currentDate);
-   futureDate.setDate(currentDate.getDate() + 30);
-   const freeTrialEndInEpoch = Math.floor(futureDate.getTime() / 1000)
-   
-   const firestoreCollection = "users/".concat(user.uid).concat("/subscriptionDetails")
-   admin.firestore().collection(firestoreCollection).doc("FREE_TRIAL").set({
-      dateEnd: freeTrialEndInEpoch,
-    });
-   async() => {
-      const stripeCustomer = await stripe.customers.create({
-         name: user.displayName,
-         email: user.email,
-      }); 
 
-      return {
-         customClaims: {
-            'stripeId': stripeCustomer.id
-         }
-      };
-   }
-   return
- });
+exports.setupUser = functions.auth.user().onCreate(async (user) => {
+  const currentDate = new Date();
+  const futureDate = new Date(currentDate);
+  futureDate.setDate(currentDate.getDate() + 30);
+  const freeTrialEndInEpoch = Math.floor(futureDate.getTime() / 1000);
+  const firestoreCollection = `users/${user.uid}/subscriptionDetails`;
+  admin.firestore().collection(firestoreCollection).doc("FREE_TRIAL").set({
+           dateEnd: freeTrialEndInEpoch,
+  });
+  const stripeCustomer = await stripe.customers.create({
+         name: user.displayName,
+           email: user.email,
+  });
+  getAuth().setCustomUserClaims(user.uid, {
+    stripeId: stripeCustomer.id
+  })
+  return
+})
  
- export const createPortalLink = functions.https.onCall(async (data, context) => {
-   const uid = context.auth?.uid;
-   if (!uid) {
-     throw new functions.https.HttpsError(
-       'unauthenticated',
-       'The function must be called while authenticated!'
-     );
-   }
+export const createPortalLink = functions.https.onCall(async (data, context) => {
+  const uid = context.auth?.uid;
+  if (!uid) {
+    throw new functions.https.HttpsError(
+      'unauthenticated',
+      'The function must be called while authenticated!'
+    );
+  }
  
-   try {
+  try {
     const userRecord = await getAuth().getUser(uid);
     var stripeId = userRecord.customClaims?.['stripeId'];
  
