@@ -1,7 +1,7 @@
 import { getAuth } from 'firebase-admin/auth';
 import * as functions from 'firebase-functions';
-import * as config from './config.js'
-
+import * as config from './config.js';
+import * as express from "express";
 import { onRequest } from "firebase-functions/v2/https";
 import Stripe from 'stripe';
 
@@ -16,7 +16,7 @@ const stripe = new Stripe(config.STRIPE_API_KEY, {
  });
  
 export const handleSubscriptionEvents = onRequest(
-   async (req: functions.https.Request, resp: any) => {
+   async (req: functions.https.Request, resp: express.Response) => {
       const relevantEvents = new Set([
          'customer.subscription.created',
          'customer.subscription.updated'
