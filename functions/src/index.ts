@@ -38,13 +38,12 @@ export const handleSubscriptionEvents = onRequest(
          if(!stripeCustomer.deleted){
             const customerEmail = stripeCustomer.email ?? ""
             const subscriptionId = subscription.id
-            getAuth().getUserByEmail(customerEmail).then((userRecord) => {
-               const firestoreCollection = "users/".concat(userRecord.uid).concat("/subscriptionDetails")
-               admin.firestore().collection(firestoreCollection).doc(subscriptionId).set({
-                  dateEnd: subscription.current_period_end,
-                  seatPurchased: subscription.items.data.at(0)?.quantity
-               })
-            })
+            const userRecord = await getAuth().getUserByEmail(customerEmail)
+            const firestoreCollection = "users/".concat(userRecord.uid).concat("/subscriptionDetails")
+            admin.firestore().collection(firestoreCollection).doc(subscriptionId).set({
+                dateEnd: subscription.current_period_end,
+                seatPurchased: subscription.items.data.at(0)?.quantity
+            });
          }
       }
       resp.status(200);   
