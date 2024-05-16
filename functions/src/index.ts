@@ -35,7 +35,7 @@ export const handleSubscriptionEvents = onRequest(
        if (relevantEvents.has(event.type)) {
          const subscription = event.data.object as Stripe.Subscription;
          const stripeCustomer = await stripe.customers.retrieve(subscription.customer.toString())
-         if(stripeCustomer.deleted != true){
+         if(!stripeCustomer.deleted){
             const customerEmail = stripeCustomer.email ?? ""
             const subscriptionId = subscription.id
             getAuth().getUserByEmail(customerEmail).then((userRecord) => {
@@ -59,11 +59,11 @@ exports.setupUser = functions.auth.user().onCreate(async (user) => {
   const freeTrialEndInEpoch = Math.floor(futureDate.getTime() / 1000);
   const firestoreCollection = `users/${user.uid}/subscriptionDetails`;
   admin.firestore().collection(firestoreCollection).doc("FREE_TRIAL").set({
-           dateEnd: freeTrialEndInEpoch,
+      dateEnd: freeTrialEndInEpoch,
   });
   const stripeCustomer = await stripe.customers.create({
-         name: user.displayName,
-           email: user.email,
+    name: user.displayName,
+    email: user.email,
   });
   getAuth().setCustomUserClaims(user.uid, {
     stripeId: stripeCustomer.id
@@ -97,18 +97,18 @@ export const createPortalLink = functions.https.onCall(async (data, context) => 
 
     const stripeCustomer = await stripe.customers.retrieve(stripeId);
  
-     if (stripeCustomer.deleted !== true) {
-       const params: Stripe.BillingPortal.SessionCreateParams = {
-         customer: stripeCustomer.id,
-         return_url: config.STRIPE_RETURN_URL
-       };
+    if (!stripeCustomer.deleted) {
+      const params: Stripe.BillingPortal.SessionCreateParams = {
+        customer: stripeCustomer.id,
+        return_url: config.STRIPE_RETURN_URL
+      };
  
-       const session = await stripe.billingPortal.sessions.create(params);
-       return session.url;
-     } else {
-      throw new Error('Customer not found on Stripe\'s system');
-     }
-   } catch (error: any) {
-      throw new functions.https.HttpsError('internal', error.message);
-   }
+      const session = await stripe.billingPortal.sessions.create(params);
+      return session.url;
+    } else {
+    throw new Error('Customer not found on Stripe\'s system');
+    }
+  } catch (error: any) {
+    throw new functions.https.HttpsError('internal', error.message);
+  }
  });
