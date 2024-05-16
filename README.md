@@ -52,7 +52,7 @@ firebase emulators:start
 stripe login --api-key xxxx
 
 # Change the URL as required
-stripe listen --forward-to http://127.0.0.1:5001/drjim-payment-demo/us-central1/handleWebhookEvents
+stripe listen --forward-to http://127.0.0.1:5001/drjim-payment-demo/us-central1/handleSubscriptionEvents
 ```
 
 Use these test cards to mock payment
