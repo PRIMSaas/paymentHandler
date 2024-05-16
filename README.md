@@ -1,6 +1,6 @@
 # Payment Handler for PRIMS
 
-This repository contains the backend code to glue Firebase Authentication, Firestore and Stripe services together. You will need 
+This repository contains the backend code to glue Firebase Authentication, Firestore and Stripe services together. 
 
 ### Prerequisites
 1. You will need to make sure you have [npm and nodejs](https://nodejs.org/en) installed. 
@@ -24,10 +24,6 @@ export let STRIPE_RETURN_URL: string = "http://127.0.0.1:5500/public/dashboard.h
 4. You have [Stripe CLI](https://docs.stripe.com/stripe-cli) installed
 
 5. You have the Blaze plan for Firebase enabled
-
-6. You have blocking function in Authentication enabled
-
-> Authentication -> Settings -> Blocking Functions
 
 ### Running / Deploying the software
 
