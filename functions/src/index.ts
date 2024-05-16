@@ -52,7 +52,7 @@ export const handleSubscriptionEvents = onRequest(
 );
 
 
-exports.setupUser = functions.auth.user().onCreate(async (user) => {
+export const setupUser = functions.auth.user().onCreate(async (user) => {
   const currentDate = new Date();
   const futureDate = new Date(currentDate);
   futureDate.setDate(currentDate.getDate() + 30);
